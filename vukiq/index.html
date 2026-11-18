@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f2a22"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<title>Vukiq – Your Pocket Profile</title>
+<style>
+:root{--bg:#f6f3ec;--ink:#14231e;--g:#0f2a22;--gold:#f2b632;--mut:#5d6b65;--line:#d9d4c7}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1411;--ink:#eef0ea;--mut:#9fb0a8;--line:#27382f}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,'Times New Roman',serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:520px;margin:auto;padding:20px 16px 60px}
+h1{font-size:30px;line-height:1.1;margin:8px 0}h2{font-size:19px;margin:26px 0 8px}
+p.s{color:var(--mut);margin:0 0 16px;font-family:system-ui,sans-serif;font-size:15px}
+label{display:block;font:600 13px system-ui,sans-serif;margin:12px 0 4px}
+input,textarea,select{width:100%;padding:12px;border:1px solid var(--line);border-radius:8px;background:transparent;color:inherit;font:16px system-ui,sans-serif}
+textarea{min-height:76px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modes button{padding:12px 8px;border:1px solid var(--line);border-radius:10px;background:transparent;color:inherit;font:600 14px system-ui,sans-serif;text-align:left}
+.modes button[aria-pressed=true]{background:var(--g);color:#fff;border-color:var(--g)}
+.modes button:last-child{grid-column:1/-1}.modes small{display:block;font-weight:400;opacity:.8}
+.card{margin-top:16px;border-radius:16px;background:var(--g);color:#fff;padding:22px;position:relative;overflow:hidden;font-family:system-ui,sans-serif}
+.card:after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border:14px solid var(--gold);border-radius:50%;opacity:.9}
+.card h3{font:700 24px Georgia,serif;margin:0 0 2px;max-width:80%}.card .t{color:var(--gold);font-weight:600;margin:0 0 12px}
+.card p{margin:3px 0;font-size:14px}.card .tag{margin-top:12px;font-size:13px;opacity:.9}
+.wm{position:absolute;inset:0;display:grid;place-items:center;font:800 54px system-ui;color:#ffffff22;transform:rotate(-20deg);pointer-events:none}
+.unlocked .wm{display:none}
+.btn{display:block;width:100%;padding:14px;border:0;border-radius:10px;background:var(--gold);color:#14231e;font:700 16px system-ui,sans-serif;margin-top:12px}
+.btn.alt{background:transparent;color:inherit;border:1px solid var(--line)}
+.pay{border:1px dashed var(--gold);border-radius:12px;padding:14px;margin-top:16px;font-family:system-ui,sans-serif;font-size:15px}
+.pay b{font-size:18px}#msg{min-height:22px;font:14px system-ui;margin-top:6px}
+.fine{font:12px system-ui;color:var(--mut);margin-top:24px}
+@media print{body *{visibility:hidden}.card,.card *{visibility:visible}.card{position:absolute;left:0;top:0;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body><main>
+<h1>Vukiq</h1>
+<p class="s">Your profile card, ready in 3 minutes on your phone. Preview free. Clean copy for KES 100.</p>
+<div class="modes" role="group" aria-label="Who is this for">
+<button data-m="pro" aria-pressed="true">Look professional<small>Confidence and status</small></button>
+<button data-m="busy" aria-pressed="false">Fast and simple<small>Only the essentials</small></button>
+<button data-m="kid" aria-pressed="false">Child safety card<small>Peace for parents</small></button>
+<button data-m="new" aria-pressed="false">First-time CV<small>Guided, step by step</small></button>
+<button data-m="biz" aria-pressed="false">Biashara<small>Traders, fundis, salons: get paid from your card</small></button></div>
+<h2>Your details</h2>
+<p class="s" id="hint"></p>
+<label for="n">Full name</label><input id="n" autocomplete="name">
+<label for="r" id="rl">Title or role</label><input id="r">
+<label for="p">Phone</label><input id="p" type="tel" inputmode="tel" autocomplete="tel">
+<label for="e">Email</label><input id="e" type="email" autocomplete="email">
+<div id="biz" hidden><label for="t">Till or Pochi number</label><input id="t" inputmode="numeric"></div>
+<label for="a" id="al">About you (one line)</label><textarea id="a"></textarea>
+<div class="card" id="card"><h3 id="cn">Your name</h3><p class="t" id="cr">Your title</p><p id="cp"></p><p id="ce"></p><p id="ca"></p><div id="cs"></div><p id="ctl" style="font-weight:700;color:var(--gold);margin-top:8px"></p><p class="tag" id="ct">Made with Vukiq</p><div class="wm">PREVIEW</div></div>
+<div class="pay" id="pay"><b>KES 100</b> removes the watermark and unlocks save and share.<br>
+Pay to <b id="till"></b> (<span id="tt"></span>), then enter the M-Pesa code from your SMS. Have a school code? Enter that instead.
+<label for="c">M-Pesa or school code</label><input id="c" maxlength="14" autocapitalize="characters" placeholder="e.g. SJK4L9X2QA">
+<div id="msg" role="status"></div><button class="btn" id="unlock">Unlock my card</button></div>
+<div id="acts" hidden><button class="btn" id="vcf">Save as contact (.vcf)</button><button class="btn alt" id="prt">Print or save as PDF</button><button class="btn alt" id="shr">Share</button></div>
+<p class="fine">Your details stay on your phone. Vukiq does not upload them. Product of BellTower, Nairobi.</p>
+<p class="fine"><a href="../terms.html">Terms</a> · <a href="../privacy.html">Privacy</a> · <a href="../">All BellTower tools</a></p>
+</main>
+<script>
+const CONFIG={payTo:"0729 446 242",payType:"Pochi la Biashara",verifyUrl:"",price:100};
+const $=i=>document.getElementById(i);let mode='pro',issuer='';
+const M={pro:{h:"Add your best title and one line on what you do. Short beats long.",r:"Title or role",a:"About you (one line)",tag:"Verified professional profile"},
+busy:{h:"Name and phone are enough. Add more later.",r:"What you do",a:"One line (optional)",tag:"Call or WhatsApp me"},
+kid:{h:"Put the child's name, then a parent's phone. Print it and keep it in the school bag.",r:"School and class",a:"Allergies or medical notes",tag:"If found, please call the parent"},
+biz:{h:"Add your till and what you sell, one item per line with its price. Customers can pay you straight from this card.",r:"Business name or trade",a:"Services and prices, one per line",tag:"Lipa na M-Pesa"},
+new:{h:"New to this? Write what you studied, one skill, and one thing you want to do.",r:"What you studied or want to do",a:"Your top skill, e.g. 'Good with Excel and customers'",tag:"Ready to learn and work"}};
+function draw(){const m=M[mode];$('hint').textContent=m.h;$('rl').textContent=m.r;$('al').textContent=m.a;
+$('cn').textContent=$('n').value||'Your name';$('cr').textContent=$('r').value||m.r;
+$('cp').textContent=$('p').value?'☎ '+$('p').value:'';$('ce').textContent=$('e').value?'✉ '+$('e').value:'';const biz=mode==='biz';$('biz').hidden=!biz;$('ca').textContent=biz?'':$('a').value;
+$('cs').innerHTML='';if(biz)$('a').value.split('\n').filter(x=>x.trim()).slice(0,8).forEach(x=>{const d=document.createElement('p');d.textContent='• '+x;$('cs').appendChild(d)});
+$('ctl').textContent=biz&&$('t').value?'Lipa na M-Pesa: '+$('t').value:'';$('ct').textContent=(issuer?issuer+' · ':'')+m.tag;
+try{localStorage.setItem('vq',JSON.stringify({mode,n:$('n').value,r:$('r').value,p:$('p').value,e:$('e').value,a:$('a').value,t:$('t').value}))}catch(x){}}
+document.querySelectorAll('.modes button').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('.modes button').forEach(x=>x.setAttribute('aria-pressed',x===b));draw()});
+['n','r','p','e','a','t'].forEach(i=>$(i).oninput=draw);
+$('till').textContent=CONFIG.payTo;$('tt').textContent=CONFIG.payType;
+function setUnlocked(){$('card').classList.add('unlocked');$('pay').hidden=true;$('acts').hidden=false}
+let HASHES={};fetch('hashes.json').then(r=>r.json()).then(j=>HASHES=j).catch(()=>{});
+async function sha(x){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(x));return[...new Uint8Array(b)].map(v=>v.toString(16).padStart(2,'0')).join('')}
+async function unlock(){const c=$('c').value.trim().toUpperCase().replace(/[\s-]/g,'');
+if(c.length===12){const h=await sha(c);const b=(HASHES.batches||[]).find(b=>b.hashes.includes(h));
+if(!b){$('msg').textContent='School code not recognised. Check it, or connect to the internet once and try again.';return}
+let u=[];try{u=JSON.parse(localStorage.getItem('vqu')||'[]')}catch(x){}
+if(u.includes(h)){$('msg').textContent='This code was already used on this phone.';return}
+u.push(h);issuer=b.school;try{localStorage.setItem('vqu',JSON.stringify(u));localStorage.setItem('vqok','1');localStorage.setItem('vqs',issuer)}catch(x){}setUnlocked();draw();return}
+if(!/^[A-Z0-9]{10}$/.test(c)){$('msg').textContent='The code has 10 letters and numbers. Check your M-Pesa SMS.';return}
+let used=[];try{used=JSON.parse(localStorage.getItem('vqu')||'[]')}catch(x){}
+if(used.includes(c)){$('msg').textContent='This code was already used.';return}
+if(CONFIG.verifyUrl){$('msg').textContent='Checking payment…';try{const r=await fetch(CONFIG.verifyUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c,amount:CONFIG.price})});const j=await r.json();if(!j.ok){$('msg').textContent='Payment not found yet. Wait a minute and try again.';return}}catch(x){$('msg').textContent='No connection. Try again.';return}}
+used.push(c);try{localStorage.setItem('vqu',JSON.stringify(used));localStorage.setItem('vqok','1')}catch(x){}setUnlocked()}
+$('unlock').onclick=unlock;$('prt').onclick=()=>print();
+$('vcf').onclick=()=>{const v=`BEGIN:VCARD\nVERSION:3.0\nFN:${$('n').value}\nTITLE:${$('r').value}\nTEL:${$('p').value}\nEMAIL:${$('e').value}\nNOTE:${mode==='biz'?'Till '+$('t').value+' | ':''}${$('a').value.replace(/\n/g,'; ')}\nEND:VCARD`;const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([v],{type:'text/vcard'}));a.download=($('n').value||'vukiq')+'.vcf';a.click()};
+$('shr').onclick=()=>{const t=`${$('n').value} – ${$('r').value}\n${$('p').value} ${$('e').value}`;navigator.share?navigator.share({text:t}).catch(()=>{}):navigator.clipboard&&navigator.clipboard.writeText(t)};
+try{const s=JSON.parse(localStorage.getItem('vq')||'null');if(s){mode=s.mode;['n','r','p','e','a','t'].forEach(i=>$(i).value=s[i]||'');document.querySelectorAll('.modes button').forEach(x=>x.setAttribute('aria-pressed',x.dataset.m===mode))}issuer=localStorage.getItem('vqs')||'';if(localStorage.getItem('vqok'))setUnlocked()}catch(x){}
+draw();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f2a22"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<title>Vukiq Kazi – Price it. Pitch it. Track it.</title>
+<style>
+:root{--bg:#f6f3ec;--ink:#14231e;--g:#0f2a22;--gold:#f2b632;--mut:#5d6b65;--line:#d9d4c7}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1411;--ink:#eef0ea;--mut:#9fb0a8;--line:#27382f}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:520px;margin:auto;padding:16px 16px 70px}
+h1{font:700 28px/1.1 Georgia,serif;margin:6px 0}h2{font:700 18px Georgia,serif;margin:20px 0 6px}
+.s{color:var(--mut);font-size:14px;margin:0 0 12px}
+label{display:block;font:600 13px system-ui;margin:10px 0 3px}
+input,textarea,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:transparent;color:inherit;font:16px system-ui}
+textarea{min-height:70px}:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:2}
+nav button{padding:10px 4px;border:1px solid var(--line);border-radius:10px;background:transparent;color:inherit;font:600 14px system-ui}
+nav button[aria-selected=true]{background:var(--g);color:#fff;border-color:var(--g)}
+.btn{display:block;width:100%;padding:13px;border:0;border-radius:10px;background:var(--gold);color:#14231e;font:700 16px system-ui;margin-top:10px}
+.btn.alt{background:transparent;color:inherit;border:1px solid var(--line)}
+.res{background:var(--g);color:#fff;border-radius:14px;padding:16px;margin-top:12px}.res b{font-size:26px;color:var(--gold)}
+.res small{display:block;opacity:.85}
+.kit{background:var(--g);color:#fff;border-radius:16px;padding:20px;margin-top:12px;position:relative;overflow:hidden}
+.kit h3{font:700 24px Georgia,serif;margin:0}.kit .t{color:var(--gold);font-weight:600;margin:0 0 10px}.kit p{margin:3px 0;font-size:14px}
+.wm{position:absolute;inset:0;display:grid;place-items:center;font:800 50px system-ui;color:#ffffff22;transform:rotate(-20deg);pointer-events:none}
+.pro .wm{display:none}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left}
+td button{border:0;background:none;color:var(--mut);font-size:18px}
+.pay{border:1px dashed var(--gold);border-radius:12px;padding:12px;margin-top:14px;font-size:14px}
+.fine{font-size:12px;color:var(--mut);margin-top:20px}#msg{min-height:20px;font-size:14px}
+section[hidden]{display:none}
+@media print{body *{visibility:hidden}.kit,.kit *{visibility:visible}.kit{position:absolute;left:0;top:0;width:100%;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body><main>
+<h1>Vukiq Kazi</h1><p class="s">Price your posts. Pitch brands. Track your money and the 5% tax.</p>
+<nav role="tablist"><button role="tab" data-t="rate" aria-selected="true">Price it</button><button role="tab" data-t="kit" aria-selected="false">Pitch it</button><button role="tab" data-t="inc" aria-selected="false">Track it</button></nav>
+
+<section id="rate"><h2>What should I charge?</h2>
+<p class="s">A starting guide, not market data. Change the base rate until it matches what brands paid you before.</p>
+<div class="row"><div><label for="f">Followers</label><input id="f" type="number" inputmode="numeric" value="20000"></div><div><label for="g">Engagement %</label><input id="g" type="number" step="0.1" value="4"></div></div>
+<div class="row"><div><label for="pl">Platform</label><select id="pl"><option value="1">TikTok</option><option value="1.2">Instagram</option><option value="1.5">YouTube</option><option value="0.8">Facebook</option><option value="0.6">WhatsApp status</option></select></div>
+<div><label for="ni">Niche</label><select id="ni"><option value="1">General</option><option value="1.5">Business or money</option><option value="1.2">Fashion or beauty</option><option value="0.9">Comedy</option><option value="1.1">Education</option><option value="1">Music, MC, events</option></select></div></div>
+<div class="row"><div><label for="dl">Deliverable</label><select id="dl"><option value="0.4">Story or status</option><option value="1" selected>Post or Reel</option><option value="1.5">Video integration</option><option value="2">Live session</option></select></div>
+<div><label for="bs">Base KES per 1,000 followers</label><input id="bs" type="number" value="250"></div></div>
+<div class="res" id="rr"></div>
+<button class="btn alt" id="usek">Use this rate in my media kit</button></section>
+
+<section id="kit" hidden><h2>Your media kit</h2>
+<div class="row"><div><label for="kn">Name or brand</label><input id="kn"></div><div><label for="kw">WhatsApp</label><input id="kw" type="tel" inputmode="tel"></div></div>
+<label for="kh">Platforms, one per line</label><textarea id="kh" placeholder="TikTok @name 20k&#10;Instagram @name 8k"></textarea>
+<label for="ka">Your audience (city, age, interests)</label><textarea id="ka" placeholder="70% Nairobi, 18-30, fashion and campus life"></textarea>
+<label for="kr">Rate per post (KES)</label><input id="kr" type="number" inputmode="numeric">
+<div class="kit" id="kc"><h3 id="cn">Your name</h3><p class="t" id="cr"></p><div id="cl"></div><p id="ca"></p><p id="cw" style="color:var(--gold);font-weight:700"></p><div class="wm">PREVIEW</div></div>
+<button class="btn" id="pitch">Copy pitch message for brands</button><button class="btn alt" id="prt">Print or save as PDF</button>
+<div class="pay" id="pay"><b>KES 100</b> removes the watermark and unlocks the tax statement download.<br>Pay to <b id="till"></b> (<span id="tt"></span>), then enter your M-Pesa code.
+<label for="c">M-Pesa code</label><input id="c" maxlength="10" autocapitalize="characters"><div id="msg" role="status"></div><button class="btn" id="unlock">Unlock</button></div></section>
+
+<section id="inc" hidden><h2>Money in</h2>
+<div class="row"><div><label for="is">Source</label><select id="is"><option>Brand deal</option><option>YouTube</option><option>Facebook</option><option>TikTok gifts</option><option>Sales</option><option>Tips</option><option>Other</option></select></div>
+<div><label for="im">Gross amount (KES)</label><input id="im" type="number" inputmode="numeric"></div></div>
+<label><input id="iw" type="checkbox" style="width:auto"> 5% was already withheld (platform or client)</label>
+<button class="btn" id="add">Add</button>
+<div class="res" id="ir"></div><table id="tb"></table>
+<button class="btn alt" id="csv">Download tax statement (CSV, KES 100 unlock)</button>
+<p class="fine">This is an estimate using the resident income tax bands, with only personal relief. It leaves out NSSF, SHIF, housing levy, expenses and other reliefs. Confirm your figures with KRA or an adviser. Nothing leaves your phone.</p></section>
+<p class="fine">Vukiq Kazi by BellTower, Nairobi. Your data stays on this phone.</p>
+<p class="fine"><a href="../terms.html">Terms</a> · <a href="../privacy.html">Privacy</a> · <a href="../">All BellTower tools</a></p>
+</main>
+<script>
+const CONFIG={payTo:"0729 446 242",payType:"Pochi la Biashara",verifyUrl:"",price:100};
+const $=i=>document.getElementById(i),K=n=>'KES '+Math.round(n).toLocaleString('en-KE');
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(x){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(x){}};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));['rate','kit','inc'].forEach(s=>$(s).hidden=s!==b.dataset.t)});
+// Rate card
+function rate(){const f=+$('f').value||0,e=+$('g').value||0,b=+$('bs').value||0;
+const eng=Math.min(2.5,Math.max(.5,e/3));const mid=f/1000*b*eng*$('pl').value*$('ni').value*$('dl').value;
+$('rr').innerHTML='';const mk=(t,v)=>{const d=document.createElement('small');d.textContent=t;const x=document.createElement('b');x.textContent=K(v);$('rr').append(d,x)};
+mk('Starting price',mid*.7);mk('Fair price',mid);mk('Premium (exclusive, fast turnaround)',mid*1.4);window.MID=Math.round(mid/100)*100}
+['f','g','pl','ni','dl','bs'].forEach(i=>$(i).oninput=rate);
+$('usek').onclick=()=>{$('kr').value=window.MID;draw();document.querySelector('[data-t=kit]').click()};
+// Media kit
+function draw(){$('cn').textContent=$('kn').value||'Your name';$('cr').textContent=$('kr').value?'From '+K($('kr').value)+' per post':'';
+$('cl').innerHTML='';$('kh').value.split('\n').filter(x=>x.trim()).slice(0,6).forEach(x=>{const p=document.createElement('p');p.textContent='• '+x;$('cl').appendChild(p)});
+$('ca').textContent=$('ka').value;$('cw').textContent=$('kw').value?'WhatsApp '+$('kw').value:'';
+sv('kz',{n:$('kn').value,w:$('kw').value,h:$('kh').value,a:$('ka').value,r:$('kr').value})}
+['kn','kw','kh','ka','kr'].forEach(i=>$(i).oninput=draw);
+$('prt').onclick=()=>print();
+$('pitch').onclick=()=>{const t=`Hi, I'm ${$('kn').value||'[name]'}. I create content for ${$('ka').value||'[audience]'}.\n${$('kh').value}\nRate: from ${K($('kr').value||0)} per post. I can share past results and a media kit.\nWhatsApp: ${$('kw').value}`;
+navigator.clipboard?navigator.clipboard.writeText(t).then(()=>$('msg').textContent='Copied. Paste it into WhatsApp or DM.'):0};
+// Unlock
+$('till').textContent=CONFIG.payTo;$('tt').textContent=CONFIG.payType;
+const pro=()=>ld('kzp',false);function setPro(){$('kc').classList.add('pro');$('pay').hidden=true}
+$('unlock').onclick=async()=>{const c=$('c').value.trim().toUpperCase(),u=ld('kzu',[]);
+if(!/^[A-Z0-9]{10}$/.test(c)){$('msg').textContent='The code has 10 letters and numbers. Check your M-Pesa SMS.';return}
+if(u.includes(c)){$('msg').textContent='This code was already used.';return}
+if(CONFIG.verifyUrl){$('msg').textContent='Checking…';try{const j=await(await fetch(CONFIG.verifyUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c,amount:CONFIG.price})})).json();if(!j.ok){$('msg').textContent='Payment not found yet. Wait a minute and retry.';return}}catch(x){$('msg').textContent='No connection. Try again.';return}}
+u.push(c);sv('kzu',u);sv('kzp',true);setPro();$('msg').textContent='Unlocked.'};
+// Earnings and tax
+function tax(y){const B=[[288000,.10],[100000,.25],[5612000,.30],[3600000,.325],[Infinity,.35]];let r=y,t=0;for(const[w,p]of B){const x=Math.min(r,w);t+=x*p;r-=x;if(r<=0)break}return Math.max(0,t-28800)}
+function inc(){const L=ld('kzi',[]);let g=0,w=0;L.forEach(x=>{g+=x.m;if(x.w)w+=x.m*.05});
+const due=tax(g);$('ir').innerHTML='';const mk=(t,v)=>{const d=document.createElement('small');d.textContent=t;const x=document.createElement('b');x.style.fontSize='20px';x.textContent=K(v);$('ir').append(d,x)};
+mk('Total earned',g);mk('Tax already withheld (credit)',w);mk('Estimated tax for the year so far',due);mk('Estimated balance to pay KRA',Math.max(0,due-w));
+$('tb').innerHTML='';L.slice().reverse().slice(0,30).forEach((x,i)=>{const r=$('tb').insertRow();r.insertCell().textContent=x.d;r.insertCell().textContent=x.s;r.insertCell().textContent=K(x.m)+(x.w?' *':'');const b=document.createElement('button');b.textContent='×';b.setAttribute('aria-label','Delete');b.onclick=()=>{L.splice(L.length-1-i,1);sv('kzi',L);inc()};r.insertCell().appendChild(b)})}
+$('add').onclick=()=>{const m=+$('im').value;if(!(m>0))return;const L=ld('kzi',[]);L.push({d:new Date().toISOString().slice(0,10),s:$('is').value,m,w:$('iw').checked});sv('kzi',L);$('im').value='';inc()};
+$('csv').onclick=()=>{if(!pro()){document.querySelector('[data-t=kit]').click();$('msg').textContent='Unlock for KES 100 to download.';return}
+const L=ld('kzi',[]);const q=s=>'"'+String(s).replace(/"/g,'""')+'"';const t='Date,Source,Gross KES,Withheld 5% KES\n'+L.map(x=>[x.d,q(x.s),x.m,x.w?Math.round(x.m*.05):0].join(',')).join('\n');
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='income-statement.csv';a.click()};
+const s=ld('kz',null);if(s){$('kn').value=s.n||'';$('kw').value=s.w||'';$('kh').value=s.h||'';$('ka').value=s.a||'';$('kr').value=s.r||''}
+if(pro())setPro();rate();draw();inc();
+if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>

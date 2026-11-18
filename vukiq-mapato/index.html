@@ -1,0 +1,277 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https:">
+<meta name="theme-color" content="#0f2a22"><link rel="manifest" href="manifest.json"><link rel="icon" href="icon.svg">
+<title>Mapato Pack</title>
+<style>
+:root{--bg:#f6f3ec;--ink:#14231e;--g:#0f2a22;--gold:#f2b632;--mut:#5d6b65;--line:#d9d4c7;--bad:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1411;--ink:#eef0ea;--mut:#9fb0a8;--line:#27382f;--bad:#ff8a80}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+main{max-width:560px;margin:auto;padding:16px 16px 70px}
+h1{font:700 28px/1.1 Georgia,serif;margin:6px 0}h2{font:700 18px Georgia,serif;margin:18px 0 6px}
+.s{color:var(--mut);font-size:14px;margin:0 0 10px}
+label{display:block;font:600 13px system-ui;margin:10px 0 3px}
+input,textarea,select{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:transparent;color:inherit;font:16px system-ui}
+textarea{min-height:110px;font:13px monospace}:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:2}
+nav button{padding:10px 2px;font-size:13px!important;border:1px solid var(--line);border-radius:10px;background:transparent;color:inherit;font:600 14px system-ui}
+nav button[aria-selected=true]{background:var(--g);color:#fff;border-color:var(--g)}
+.btn{display:block;width:100%;padding:13px;border:0;border-radius:10px;background:var(--gold);color:#14231e;font:700 16px system-ui;margin-top:10px}
+.btn.alt{background:transparent;color:inherit;border:1px solid var(--line)}
+.res{background:var(--g);color:#fff;border-radius:14px;padding:14px;margin-top:10px}.res b{font-size:22px;color:var(--gold);display:block}
+.res .risk b{color:#ffb4a8}.res small{opacity:.85}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}td,th{padding:5px 3px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+td select{padding:4px;font-size:13px}td input{width:auto}
+.bar{display:grid;grid-template-columns:1fr auto;gap:6px;margin-bottom:6px}.bar .btn{margin:0;width:auto;padding:10px 12px}.step{border-left:4px solid var(--gold);padding:4px 10px;margin:8px 0;font-size:14px}.step b{display:block}
+td select,td input[type=checkbox]{min-height:36px}input[type=checkbox]{width:22px!important;height:22px}.warn{background:var(--bad);color:#fff;padding:10px;border-radius:8px;margin:8px 0}.hd{font-size:12px;border-bottom:1px solid var(--line);margin-bottom:8px;padding-bottom:6px;color:var(--mut)}details{margin:10px 0;border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.pay{border:1px dashed var(--gold);border-radius:12px;padding:12px;margin-top:14px;font-size:14px}
+.fine{font-size:12px;color:var(--mut);margin-top:16px}#msg,#im{min-height:20px;font-size:14px}
+section[hidden]{display:none}.wm{display:grid;place-items:center;font:800 22px system-ui;color:var(--mut);opacity:.5}.pro .wm{display:none}
+#pk{position:relative}
+@media print{body *{visibility:hidden}#pk,#pk *{visibility:visible}#pk{position:absolute;left:0;top:0;width:100%;color:#000}body.prec #pk,body.prec #pk *{visibility:hidden}body.prec #rpt,body.prec #rpt *{visibility:visible}body.prec #rpt{position:absolute;left:0;top:0;width:100%;color:#000}}
+</style></head><body><main>
+<h1>Mapato Pack</h1><p class="s">Reconcile M-Pesa, bank and cash against KRA eTIMS. See what is missing and what to do next.</p>
+<div class="bar"><select id="cl" aria-label="Client"></select><button class="btn alt" id="ncl">New client</button></div>
+<nav role="tablist"><button role="tab" data-t="imp" aria-selected="true">1 Import</button><button role="tab" data-t="rev" aria-selected="false">2 Review</button><button role="tab" data-t="pak" aria-selected="false">3 Pack</button><button role="tab" data-t="rec" aria-selected="false">4 Match</button></nav>
+
+<div class="warn" id="wn" hidden role="alert"></div><section id="imp"><h2>Bring your money in</h2>
+<p class="s">Pick any way. Importing the same transaction twice is safe, it is skipped.</p>
+<label for="an">Account name (e.g. M-Pesa, KCB 1234, Airtel Money)</label><input id="an" placeholder="Blank = M-Pesa for M-Pesa files, Bank for bank files">
+<label for="fl">A. Upload a file: M-Pesa statement PDF, M-Pesa or bank CSV</label><input id="fl" type="file" accept=".pdf,.csv,.txt,.tsv">
+<label for="pt">B. Paste: M-Pesa SMS messages, statement text, or CSV rows</label><textarea id="pt" placeholder="QHX1ABC234 Confirmed. Ksh500.00 received from JOHN DOE 0712345678 on 5/3/26 at 2:15 PM. New M-PESA balance is Ksh1,200.00."></textarea>
+<button class="btn" id="go">Import pasted text</button><div id="im" role="status"></div>
+<h2>C. Cash and other money</h2>
+<div class="row"><div><label for="ca">Amount (KES)</label><input id="ca" type="number" inputmode="numeric"></div><div><label for="ct">Type</label><select id="ct"><option value="in">Money in (sale)</option><option value="out">Money out (expense)</option></select></div></div>
+<label for="cn">Note, e.g. "stock from Gikomba"</label><input id="cn"><button class="btn alt" id="cadd">Add cash entry</button>
+<h2>D. KRA eTIMS records</h2><p class="s">In iTax, download your eTIMS purchases and sales for the year, save them as CSV, and bring them here. I could not confirm the exact column names KRA uses, so check the line below after you import.</p>
+<div class="row"><div><label for="ek">These are</label><select id="ek"><option value="purchase">Purchases (invoices to me)</option><option value="sale">Sales (invoices I issued)</option></select></div><div><label for="ef">CSV file</label><input id="ef" type="file" accept=".csv,.txt"></div></div><div id="em" role="status"></div><h2>E. Back up</h2><p class="s">Your browser can clear stored data. Download a backup often and keep it safe: it contains client records.</p><button class="btn alt" id="bk">Download backup (JSON)</button><label for="rs2">Restore a backup</label><input id="rs2" type="file" accept=".json"></section>
+
+<section id="rev" hidden><h2>Check the categories</h2>
+<p class="s">Fix anything wrong. Mark "Personal" for family money. Tick eTIMS where you have a KRA invoice.</p>
+<div class="row"><div><label for="yr">Year</label><select id="yr"></select></div><div><label for="fq">Show</label><select id="fq"><option value="all">All</option><option value="risk">Expenses without eTIMS</option><option value="Sale">Sales only</option></select></div></div>
+<div id="ih"></div><table id="tb"></table><button class="btn alt" id="more" hidden>Show more</button><button class="btn alt" id="clr">Delete all my data</button></section>
+
+<section id="pak" hidden><h2>Your Mapato Pack</h2><details><summary><b>Client and settings</b></summary><div class="row"><div><label for="s_pin">Client KRA PIN</label><input id="s_pin" maxlength="11"></div><div><label for="s_type">Tax basis</label><select id="s_type"><option value="ind">Individual or sole trader (bands)</option><option value="company">Company (30%)</option><option value="tot">Turnover tax (gross sales)</option></select></div></div><div class="row"><div><label for="s_tot">Turnover tax % (confirm with KRA)</label><input id="s_tot" type="number" step="0.1"></div><div><label for="s_df">Bank file date format</label><select id="s_df"><option value="dmy">Day/Month/Year</option><option value="mdy">Month/Day/Year</option></select></div></div><div class="row"><div><label for="s_tol">Match tolerance (KES)</label><input id="s_tol" type="number"></div><div><label for="s_win">Match window (days)</label><input id="s_win" type="number"></div></div><div class="row"><div><label for="s_big">Review flag from (KES)</label><input id="s_big" type="number"></div><div><label for="s_pb">Prepared by</label><input id="s_pb"></div></div><label for="s_rb">Reviewed by</label><input id="s_rb"></details><div id="pk"><div class="hd"></div><div class="res" id="sm"></div><table id="mt"></table><div class="wm">PREVIEW – KES 200 TO UNLOCK</div></div>
+<button class="btn" id="csv">Download full pack (CSV)</button><button class="btn alt" id="prt">Print or save as PDF</button>
+<div class="pay" id="pay"><b>KES 200</b> unlocks the pack for this phone.<br>Pay to <b id="till"></b> (<span id="tt"></span>), then enter the licence code you receive.
+<label for="c">Licence code (or M-Pesa code)</label><input id="c" maxlength="10" autocapitalize="characters"><div id="msg" role="status"></div><button class="btn" id="unlock">Unlock</button></div>
+<p class="fine">This is an estimate for people taxed on profit. If you pay turnover tax on gross sales, expenses do not reduce it, so the eTIMS figure does not apply to you. It ignores NSSF, SHIF, housing levy and other reliefs. Rates and rules change, so confirm with KRA or an adviser. Everything stays on this phone. Keep tax records for at least five years; confirm longer periods that apply to your firm. Cash basis only: this is not IFRS accrual accounting.</p></section>
+<section id="rec" hidden><h2>Match and reconcile</h2><p class="s">Checks your accounts against each other and against eTIMS, finds gaps, and lists next steps.</p><button class="btn" id="run">Run matching and tick matched invoices</button>
+<div id="rpt"><div class="hd"></div><div class="res" id="rs"></div><h2>Next steps</h2><div id="ns"></div></div>
+<button class="btn alt" id="nei">Download non-eTIMS schedule (CSV)</button><button class="btn alt" id="rcv">Download reconciliation report (CSV)</button><button class="btn alt" id="rpr">Print report</button><button class="btn alt" id="lgd">Download audit log (CSV)</button><div id="rm" role="status" class="s"></div></section>
+<p class="fine"><a href="../terms.html">Terms</a> · <a href="../privacy.html">Privacy</a> · <a href="../">All BellTower tools</a></p>
+</main>
+<script>
+const CONFIG={payTo:"0729 446 242",payType:"Pochi la Biashara",verifyUrl:"",price:200,pub:{"crv":"P-256","ext":true,"key_ops":["verify"],"kty":"EC","x":"EkPgi70pp9-a4nMBUFkfV1q8V4RforU2vKCSbzJX-Lw","y":"fAj0yLkvx0tNZHMzGbQvfOfiWz7AhLMzkKmi3TUrBMk"}};
+/*PARSERS*/
+const num=s=>{s=String(s).trim();const neg=/^\(.*\)$/.test(s)||/-\s*$/.test(s)||/\bDr\b/i.test(s)||/^-/.test(s);const v=parseFloat(s.replace(/[^\d.]/g,''))||0;return neg?-v:v};
+let DFMT='dmy';const setDfmt=f=>{DFMT=f==='mdy'?'mdy':'dmy'};
+const cell=s=>{s=String(s==null?'':s);return/^[=+\-@\t\r]/.test(s)?"'"+s:s};
+const okPin=p=>/^[AP]\d{9}[A-Z]$/i.test(String(p||'').trim());
+const MO=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+function parseDate(s){s=String(s).trim();let m,y,mo,d;
+if(m=s.match(/^(\d{4})-(\d{2})-(\d{2})/)){y=+m[1];mo=+m[2];d=+m[3]}
+else if(m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/)){const a=+m[1],b=+m[2];y=m[3].length==2?2000+(+m[3]):+m[3];if(a>12){d=a;mo=b}else if(b>12){mo=a;d=b}else if(DFMT==='mdy'){mo=a;d=b}else{d=a;mo=b}}
+else if(m=s.match(/^(\d{1,2})[ \-]([A-Za-z]{3})[a-z]*[ \-,]+(\d{2,4})/)){mo=MO.indexOf(m[2].toLowerCase())+1;d=+m[1];y=m[3].length==2?2000+(+m[3]):+m[3]}
+else return'';
+if(!(mo>=1&&mo<=12&&d>=1&&d<=31&&y>=2000&&y<=2100))return'';
+if(d>new Date(Date.UTC(y,mo,0)).getUTCDate())return'';
+return y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0')}
+function classify(t,d){d=d||'';
+if(/overdraft|od loan|fuliza|loan/i.test(d))return'Loan';
+if(/reversal/i.test(d))return'Transfer';
+if(t==='out'){if(/withdraw|cash out/i.test(d))return'Transfer';if(/charge|fee|transaction cost/i.test(d))return'Fee';return'Expense'}
+return/deposit of funds|cash in/i.test(d)?'Transfer':'Sale'}
+const mk=(id,d,t,a,p,s,bal,dt)=>({id,d,t,a,p:String(p||'').slice(0,80),s,c:classify(t,p),e:false,bal:bal==null?null:bal,dt:dt||d});
+function parseStatement(x){const o=[],re=/\b([A-Z0-9]{10})\s+(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2}:\d{2})\s+([\s\S]+?)\s+(COMPLETED|FAILED|CANCELLED)\s+([\d,]+\.\d{2})\s+([\d,]+\.\d{2})\s+(-?[\d,]+\.\d{2})/g;let m;
+while(m=re.exec(x)){if(m[5]!=='COMPLETED')continue;const i=num(m[6]),w=num(m[7]);if(!i&&!w)continue;const t=i>0?'in':'out',a=i>0?i:w;
+o.push(mk(m[1]+'-'+t+'-'+a,m[2],t,a,m[4].replace(/\s+/g,' ').trim(),'mpesa',num(m[8]),m[2]+' '+m[3]))}return o}
+function parseSms(x){const o=[];for(const p of x.split(/(?=\b[A-Z0-9]{10}\s+Confirmed)/)){const m=p.match(/^([A-Z0-9]{10})\s+Confirmed\.?\s*([\s\S]*)/);if(!m)continue;const b=m[2];
+const am=b.match(/Ksh\s?([\d,]+(?:\.\d+)?)/i);if(!am)continue;const a=num(am[1]);const dm=b.match(/\bon\s+(\d{1,2}\/\d{1,2}\/\d{2,4})/);
+let t='out',pty='';
+if(/received\b[\s\S]*?\bfrom/i.test(b)){t='in';pty=(b.match(/\bfrom\s+(.+?)(?:\s+\d{9,12})?\s+on\s/i)||[])[1]||''}
+else if(/(?:paid to|sent to)/i.test(b)){pty=(b.match(/(?:paid to|sent to)\s+(.+?)\.?\s+on\s/i)||[])[1]||''}
+else if(/withdraw/i.test(b))pty='Withdraw cash';else if(/airtime|bought/i.test(b))pty='Airtime';
+const f=num((b.match(/Transaction cost,?\s*Ksh\s?([\d,]+(?:\.\d+)?)/i)||[])[1]);
+const bl=(b.match(/balance is\s*Ksh\s?(-?[\d,]+(?:\.\d+)?)/i)||[])[1],tm=b.match(/\bat\s+(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+const d=dm?parseDate(dm[1]):'';let dt=d;if(d&&tm)dt+=' '+String((+tm[1]%12)+(/pm/i.test(tm[3])?12:0)).padStart(2,'0')+':'+tm[2]+':00';
+const e=mk(m[1]+'-'+t+'-'+a,d,t,a,pty,'sms',bl==null?null:num(bl),dt);e.fx=t==='out'?f:0;o.push(e);
+if(t==='out'&&f>0)o.push(mk(m[1]+'-fee',d,'out',f,'M-Pesa charge','sms',null,dt))}return o}
+function csvRows(t){const r=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];
+if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}
+else if(c=='"')q=true;else if(c==','||c==';'||c=='\t'){row.push(f);f=''}
+else if(c=='\n'||c=='\r'){if(c=='\r'&&t[i+1]=='\n')i++;row.push(f);r.push(row);row=[];f=''}else f+=c}
+row.push(f);r.push(row);return r.filter(x=>x.some(y=>y.trim()))}
+function parseCsv(x){const R=csvRows(x);let hi=-1;
+for(let i=0;i<Math.min(R.length,20);i++){const j=R[i].join('|');if(/date|time/i.test(j)&&/credit|debit|paid in|withdraw|amount|money/i.test(j)){hi=i;break}}
+if(hi<0)return[];const h=R[hi].map(c=>c.trim().toLowerCase());const F=re=>h.findIndex(c=>re.test(c));
+let cD=F(/completion/);if(cD<0)cD=F(/date|time/);const cDe=F(/details|description|narrat|particular|remark/),cIn=F(/paid in|credit|money in|deposit|received/),cOut=F(/withdraw|debit|paid out|money out/),cAm=F(/^amount/),cId=F(/receipt|reference|^ref|trans(action)?[ _]?id/),cSt=F(/status/),cB=F(/balance/);
+const o=[];for(const r of R.slice(hi+1)){if(cSt>=0&&r[cSt]&&!/complet|success/i.test(r[cSt]))continue;
+const d=parseDate(r[cD]||'');if(!d)continue;let i=cIn>=0?num(r[cIn]):0,w=cOut>=0?Math.abs(num(r[cOut])):0;
+if(!i&&!w&&cAm>=0){const v=num(r[cAm]);if(v>0)i=v;else w=-v}if(!i&&!w)continue;const t=i>0?'in':'out',a=i>0?i:w;
+const desc=cDe>=0?r[cDe]:'',idc=cId>=0?(r[cId]||'').trim():'';const mp=/^[A-Z0-9]{10}$/.test(idc)&&/\d/.test(idc);
+const bal=cB>=0&&(r[cB]||'').trim()!==''?num(r[cB]):null,tm=(r[cD]||'').match(/\d{2}:\d{2}:\d{2}/);
+o.push(mk(mp?idc+'-'+t+'-'+a:d+'|'+a+'|'+t+'|'+desc.slice(0,30)+'|'+(bal==null?'':bal),d,t,a,desc.replace(/\s+/g,' ').trim(),mp?'mpesa':'bank',bal,d+' '+(tm?tm[0]:'00:00:00')))}return o}
+function parseAny(x){let r=parseStatement(x);if(r.length)return r;r=parseSms(x);if(r.length)return r;return parseCsv(x)}
+function parseEtims(x,k){const R=csvRows(x);let hi=-1;
+for(let i=0;i<Math.min(R.length,20);i++){const j=R[i].join('|');if(/invoice|receipt|control/i.test(j)&&/date/i.test(j)&&/total|amount|value|gross/i.test(j)){hi=i;break}}
+if(hi<0)return{rows:[],note:'I could not find the headings. The file needs columns for invoice number, date and total amount.'};
+const h=R[hi].map(c=>c.trim().toLowerCase()),F=re=>h.findIndex(c=>re.test(c));
+let cI=F(/invoice (no|num)|receipt (no|num)|control unit|cu inv|^invoice$|^receipt$/);if(cI<0)cI=F(/invoice|receipt|ref/);
+const cD=F(/date/),cP=F(/pin/),cN=F(/name|supplier|seller|customer|buyer|trader/),cT=F(/type|document/);let cA=F(/total/);if(cA<0)cA=h.findIndex(c=>/amount|gross|value/.test(c)&&!/tax|vat/.test(c));
+if(cI<0||cD<0||cA<0)return{rows:[],note:'A column is missing: invoice number, date or total amount.'};
+const rows=[];for(const r of R.slice(hi+1)){const d=parseDate(r[cD]||''),raw=num(r[cA]);if(!d||!raw)continue;const inv=(r[cI]||'').trim(),pin=cP>=0?(r[cP]||'').trim():'';
+rows.push({id:k+'-'+inv+'-'+raw,k,d,inv,pin,nm:cN>=0?(r[cN]||'').trim():'',a:Math.abs(raw),cn:raw<0||(cT>=0&&/credit/i.test(r[cT]||'')),bp:!!pin&&!okPin(pin)})}
+return{rows,note:'Columns used: invoice "'+R[hi][cI]+'", date "'+R[hi][cD]+'", total "'+R[hi][cA]+'".'}}
+function tax(y){const B=[[288000,.10],[100000,.25],[5612000,.30],[3600000,.325],[Infinity,.35]];let r=y,t=0;for(const[w,p]of B){const x=Math.min(r,w);t+=x*p;r-=x;if(r<=0)break}return Math.max(0,t-28800)}
+function taxCalc(type,profit,gross,rate){if(type==='company')return Math.max(0,profit)*0.30;if(type==='tot')return Math.max(0,gross)*(rate||1.5)/100;return tax(Math.max(0,profit))}
+const AC=e=>e.ac||({mpesa:'M-Pesa',sms:'M-Pesa',bank:'Bank',cash:'Cash'}[e.s]||'Other');
+function recon(E,T,y,o){o=Object.assign({tol:1,win:7,big:1e6},o||{});const tol=+o.tol||0,win=+o.win||7;const ye=e=>(e.d||'').startsWith(y),dy=s=>Date.parse(s)/864e5,R={};
+const toks=s=>new Set(String(s||'').toUpperCase().split(/[^A-Z0-9]+/).filter(w=>w.length>3&&!/^(PAYMENT|MERCHANT|CUSTOMER|TRANSFER|LIMITED|COMPANY)$/.test(w)));
+const nm=(a,b)=>{const z=toks(b.nm||b.p);for(const w of toks(a.p))if(z.has(w))return true;return false};
+const pair=(A,B,ok)=>{const bk=new Map();B.forEach(b=>{const k=Math.round(b.a);(bk.get(k)||bk.set(k,[]).get(k)).push(b)});const used=new Set(),m=[],r=Math.ceil(tol)+1,rem=new Set(A);
+for(const pass of[1,0])for(const a of A){if(!rem.has(a))continue;let best=null,bs=1e9;const k0=Math.round(a.a);for(let k=k0-r;k<=k0+r;k++){const L=bk.get(k);if(!L)continue;for(const b of L){if(used.has(b)||Math.abs(b.a-a.a)>tol||(ok&&!ok(a,b)))continue;if(pass&&!nm(a,b))continue;const dd=Math.abs(dy(b.d)-dy(a.d));if(dd>win)continue;if(dd<bs){best=b;bs=dd}}}if(best){used.add(best);m.push([a,best]);rem.delete(a)}}
+const un=A.filter(a=>rem.has(a));
+const left=B.filter(b=>!used.has(b)),s=[];
+if(!ok&&left.length&&un.length&&left.length*un.length<4e6){const ub=new Map();un.forEach(a=>{const k=Math.round(a.a);(ub.get(k)||ub.set(k,[]).get(k)).push(a)});const gone=new Set();
+left.forEach(b=>{for(const a1 of un){if(gone.has(a1)||a1.a>=b.a||Math.abs(dy(a1.d)-dy(b.d))>win)continue;const k=Math.round(b.a-a1.a);for(let kk=k-1;kk<=k+1;kk++){const L=ub.get(kk);if(!L)continue;const a2=L.find(x=>x!==a1&&!gone.has(x)&&Math.abs(x.a+a1.a-b.a)<=tol&&Math.abs(dy(x.d)-dy(b.d))<=win);if(a2){gone.add(a1);gone.add(a2);gone.add(b);s.push([a1,a2,b]);return}}}});
+return{m,un:un.filter(a=>!gone.has(a)),left:left.filter(b=>!gone.has(b)),s}}
+return{m,un,left,s}};
+const P=T.filter(t=>t.k==='purchase'&&!t.cn&&ye(t)),S=T.filter(t=>t.k==='sale'&&!t.cn&&ye(t));R.hasP=P.length>0;R.hasS=S.length>0;
+R.cn=T.filter(t=>t.cn&&ye(t));R.bp=T.filter(t=>t.bp&&ye(t));R.und=E.filter(e=>!e.d).length;
+R.ex=pair(E.filter(e=>ye(e)&&e.t==='out'&&e.c==='Expense'),P);
+R.sa=pair(E.filter(e=>ye(e)&&e.t==='in'&&e.c==='Sale'),S);
+R.tr=pair(E.filter(e=>ye(e)&&e.c==='Transfer'&&e.t==='out'),E.filter(e=>ye(e)&&e.c==='Transfer'&&e.t==='in'),(a,b)=>AC(a)!==AC(b));
+R.big=E.filter(e=>ye(e)&&e.a>=o.big);R.near=E.filter(e=>ye(e)&&e.a>=o.big*.9&&e.a<o.big);
+R.gaps=[];const G={};E.forEach(e=>{if(e.bal!=null)(G[AC(e)]=G[AC(e)]||[]).push(e)});
+Object.keys(G).forEach(ac=>{const L=G[ac].slice().sort((a,b)=>(a.dt||'').localeCompare(b.dt||''));let cur=null,i=0;
+while(i<L.length){let j=i;while(j<L.length&&L[j].dt===L[i].dt)j++;const rest=L.slice(i,j);i=j;
+while(rest.length){let k=-1;const net=r=>(r.t==='in'?r.a:-r.a)-(r.fx||0);if(cur!==null)k=rest.findIndex(r=>Math.abs(cur+net(r)-r.bal)<0.02);
+if(k<0){k=0;if(cur!==null){const r=rest[0];const g=r.bal-(cur+net(r));if((r.dt||'').startsWith(y))R.gaps.push({ac,at:r.dt,amt:g})}}
+cur=rest.splice(k,1)[0].bal}}});
+R.mm=[];const A={};E.filter(ye).forEach(e=>{(A[AC(e)]=A[AC(e)]||new Set()).add(e.d.slice(0,7))});
+Object.keys(A).forEach(a=>{const ms=[...A[a]].sort();let[y0,m0]=ms[0].split('-').map(Number);const[y1,m1]=ms[ms.length-1].split('-').map(Number),miss=[];
+while(y0<y1||(y0===y1&&m0<=m1)){const k=y0+'-'+String(m0).padStart(2,'0');if(!A[a].has(k))miss.push(k);if(++m0>12){m0=1;y0++}}if(miss.length)R.mm.push({ac:a,miss})});
+const seen={};R.dup=0;E.filter(ye).forEach(e=>{const k=[AC(e),e.d,e.t,e.a,e.p].join('|');if(seen[k])R.dup++;seen[k]=1});return R}
+const b64=u=>Uint8Array.from(atob(u.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+async function verifyLic(tok,pub){const[p,g]=String(tok).trim().split('.');if(!p||!g)return null;const key=await crypto.subtle.importKey('jwk',pub,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+if(!await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,b64(g),b64(p)))return null;return JSON.parse(new TextDecoder().decode(b64(p)))}
+/*END*/
+const $=i=>document.getElementById(i),K=n=>'KES '+Math.round(n).toLocaleString('en-KE');
+const ld=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(x){return d}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(x){const w=document.getElementById('wn');if(w){w.hidden=false;w.textContent='Storage is full or blocked. Download a backup now and remove older years. New data may not be saved.'}return false}};
+if(ld('mp',null)&&!ld('mp:Default',null))sv('mp:Default',ld('mp',[]));
+const DEF={type:'ind',tot:1.5,df:'dmy',tol:1,win:7,big:1000000,pb:'',rb:'',pin:''};
+let CL=ld('mpcur','Default'),CLS=ld('mpcl',['Default']),E=ld('mp:'+CL,[]),T=ld('mpt:'+CL,[]),shown=40,ST=Object.assign({},DEF,ld('mps:'+CL,{})),LOG=ld('mpl:'+CL,[]),IMP=ld('mpi:'+CL,[]);
+function log(a,d){LOG.push({t:new Date().toISOString(),u:ST.pb||'',a,d:String(d||'')});if(LOG.length>1000)LOG.splice(0,LOG.length-1000);sv('mpl:'+CL,LOG)}
+function fillCl(){$('cl').innerHTML='';CLS.forEach(c=>$('cl').add(new Option(c,c)));$('cl').value=CL}
+function sw(){sv('mpcur',CL);E=ld('mp:'+CL,[]);T=ld('mpt:'+CL,[]);ST=Object.assign({},DEF,ld('mps:'+CL,{}));LOG=ld('mpl:'+CL,[]);IMP=ld('mpi:'+CL,[]);shown=40;fillCl();fillSet();render();renderRec()}
+$('cl').onchange=()=>{CL=$('cl').value;sw()};
+$('ncl').onclick=()=>{const n=(prompt('Client name')||'').trim();if(!n||CLS.includes(n))return;CLS.push(n);sv('mpcl',CLS);CL=n;sw()};
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.setAttribute('aria-selected',x===b));['imp','rev','pak','rec'].forEach(s=>$(s).hidden=s!==b.dataset.t);render();if(b.dataset.t==='rec')renderRec()});
+function add(list,label){const bid=Date.now();const have=new Set(E.map(e=>e.id));let n=0,dup=0;const an=$('an').value.trim();for(const e of list){if(have.has(e.id)){dup++;continue}have.add(e.id);e.b=bid;e.ac=(e.s==='cash'?'':an)||AC(e);E.push(e);n++}if(n){IMP.push({b:bid,l:label||'manual entry',n,t:new Date().toISOString().slice(0,16)});sv('mpi:'+CL,IMP);log('import',(label||'manual entry')+': '+n+' added, '+dup+' skipped')}sv('mp:'+CL,E);
+$('im').textContent=n?`Added ${n} transactions${dup?', skipped '+dup+' already imported':''}. Go to Review.`:(dup?'Nothing new: all '+dup+' were already imported.':'I could not read any transactions. Try another way, or paste a few lines and check the format.');render()}
+$('go').onclick=()=>add(parseAny($('pt').value),'pasted text');
+$('cadd').onclick=()=>{const a=+$('ca').value;if(!(a>0))return;add([mk('cash-'+Date.now(),new Date().toISOString().slice(0,10),$('ct').value,a,$('cn').value||'Cash','cash')]);$('ca').value='';$('cn').value=''};
+function loadPdf(){return new Promise((res,rej)=>{if(window.pdfjsLib)return res();const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=()=>{pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res()};s.onerror=()=>rej(new Error('offline'));document.head.appendChild(s)})}
+async function pdfText(f){await loadPdf();const task=pdfjsLib.getDocument({data:await f.arrayBuffer()});
+task.onPassword=(cb,why)=>{const p=prompt(why===2?'Wrong password. Try again:':'This PDF is locked. Enter its password (it comes in an SMS or email from Safaricom):');cb(p||'')};
+const doc=await task.promise;let out='';for(let i=1;i<=doc.numPages;i++){const tc=await(await doc.getPage(i)).getTextContent();const rows={};
+tc.items.forEach(it=>{const y=Math.round(it.transform[5]);(rows[y]=rows[y]||[]).push(it)});
+Object.keys(rows).map(Number).sort((a,b)=>b-a).forEach(y=>{out+=rows[y].sort((a,b)=>a.transform[4]-b.transform[4]).map(i=>i.str).join(' ')+'\n'})}return out}
+$('fl').onchange=async e=>{const f=e.target.files[0];if(!f)return;$('im').textContent='Reading…';
+try{const t=/\.pdf$/i.test(f.name)?await pdfText(f):await f.text();add(parseAny(t),f.name)}catch(x){$('im').textContent=/offline/.test(x.message)?'PDF reading needs internet the first time. Or open the PDF and paste its text in box B.':'Could not open the file. Wrong password? You can also copy the text from the PDF and paste it in box B.'}e.target.value=''};
+const CATS=['Sale','Expense','Fee','Loan','Transfer','Personal'];
+function yrs(){const s=new Set(E.map(e=>(e.d||'').slice(0,4)).filter(Boolean));s.add(String(new Date().getFullYear()));const a=[...s].sort().reverse(),c=$('yr').value;$('yr').innerHTML='';a.forEach(y=>$('yr').add(new Option(y,y)));if(c&&a.includes(c))$('yr').value=c}
+function sum(y){const L=E.filter(e=>(e.d||'').startsWith(y));let s=0,x=0,r=0;const M={};
+L.forEach(e=>{const m=(e.d||'').slice(0,7);M[m]=M[m]||{s:0,x:0};if(e.t==='in'&&e.c==='Sale'){s+=e.a;M[m].s+=e.a}
+else if(e.t==='out'&&(e.c==='Expense'||e.c==='Fee')){x+=e.a;M[m].x+=e.a;if(e.c==='Expense'&&!e.e)r+=e.a}});
+const p=s-x;return{s,x,r,p,M,tx:taxCalc(ST.type,p,s,ST.tot),txr:taxCalc(ST.type,p+r,s,ST.tot),n:L.length}}
+function line(box,t,v,cls){const d=document.createElement('div');if(cls)d.className=cls;const s=document.createElement('small');s.textContent=t;const b=document.createElement('b');b.textContent=v;d.append(s,b);box.appendChild(d)}
+function render(){yrs();const y=$('yr').value,S=sum(y);
+const box=$('sm');box.innerHTML='';line(box,'Sales '+y,K(S.s));line(box,'Expenses',K(S.x));line(box,'Profit',K(S.p));line(box,'Estimated income tax ('+({ind:'individual bands',company:'company 30%',tot:'turnover tax'}[ST.type])+')',K(S.tx));if(E.some(e=>!e.d))line(box,'Entries with no valid date (left out)',String(E.filter(e=>!e.d).length),'risk');
+line(box,'Expenses without an eTIMS invoice',K(S.r),'risk');line(box,'Extra tax at risk if KRA disallows them (estimate)',ST.type==='tot'?'Not applicable: turnover tax is on gross sales':K(S.txr-S.tx),'risk');
+const mt=$('mt');mt.innerHTML='<tr><th>Month</th><th>Sales</th><th>Expenses</th><th>Profit</th></tr>';Object.keys(S.M).sort().forEach(m=>{const r=mt.insertRow();[m,K(S.M[m].s),K(S.M[m].x),K(S.M[m].s-S.M[m].x)].forEach(v=>r.insertCell().textContent=v)});
+const q=$('fq').value;let L=E.filter(e=>(e.d||'').startsWith(y)||!e.d);if(q==='risk')L=L.filter(e=>e.t==='out'&&e.c==='Expense'&&!e.e);else if(q==='Sale')L=L.filter(e=>e.c==='Sale');
+L=L.slice().sort((a,b)=>(b.d||'').localeCompare(a.d||''));const tb=$('tb');tb.innerHTML='<tr><th>Date</th><th>Who</th><th>KES</th><th>Type</th><th>eTIMS</th></tr>';
+L.slice(0,shown).forEach(e=>{const r=tb.insertRow();r.insertCell().textContent=(e.d||'?').slice(5);r.insertCell().textContent=(e.t==='in'?'+ ':'− ')+e.p;r.insertCell().textContent=Math.round(e.a).toLocaleString('en-KE');
+const s=document.createElement('select');CATS.forEach(c=>s.add(new Option(c,c)));s.value=e.c;s.setAttribute('aria-label','Category');s.onchange=()=>{log('category',e.id+': '+e.c+' to '+s.value);e.c=s.value;sv('mp:'+CL,E);render()};r.insertCell().appendChild(s);
+const c=r.insertCell();if(e.t==='out'&&e.c==='Expense'){const k=document.createElement('input');k.type='checkbox';k.checked=e.e;k.setAttribute('aria-label','Has eTIMS invoice');k.onchange=()=>{e.e=k.checked;log('eTIMS tick',e.id+': '+k.checked);sv('mp:'+CL,E);render()};c.appendChild(k)}});
+$('more').hidden=L.length<=shown;renderImp();hdr()}
+$('yr').onchange=$('fq').onchange=()=>{shown=40;render()};$('more').onclick=()=>{shown+=40;render()};
+$('clr').onclick=()=>{if(confirm('Delete all data for client '+CL+' on this phone?')){E=[];sv('mp:'+CL,E);render()}};
+$('till').textContent=CONFIG.payTo;$('tt').textContent=CONFIG.payType;
+const pro=()=>{if(CONFIG.pub){const L=ld('mplic',null);return !!L&&new Date(L.e)>=new Date()}return ld('mpp',false)};function setPro(){$('pk').classList.add('pro');$('pay').hidden=true}
+$('unlock').onclick=async()=>{const c=$('c').value.trim().toUpperCase(),u=ld('mpu',[]);
+if(!/^[A-Z0-9]{10}$/.test(c)){$('msg').textContent='The code has 10 letters and numbers. Check your M-Pesa SMS.';return}
+if(u.includes(c)){$('msg').textContent='This code was already used.';return}
+if(CONFIG.verifyUrl){$('msg').textContent='Checking…';try{const j=await(await fetch(CONFIG.verifyUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c,amount:CONFIG.price})})).json();if(!j.ok){$('msg').textContent='Payment not found yet. Wait a minute and retry.';return}}catch(x){$('msg').textContent='No connection. Try again.';return}}
+u.push(c);sv('mpu',u);sv('mpp',true);setPro();$('msg').textContent='Unlocked.'};
+const need=()=>{if(!pro()){$('msg').textContent='Unlock for KES 200 to download or print without the preview mark.';return false}return true};
+$('prt').onclick=()=>{if(pro())print();else need()};
+$('csv').onclick=()=>{if(!need())return;const q=s=>'"'+cell(s).replace(/"/g,'""')+'"',y=$('yr').value,S=sum(y);
+let t=`Mapato Pack ${y}\nSales,${Math.round(S.s)}\nExpenses,${Math.round(S.x)}\nProfit,${Math.round(S.p)}\nExpenses without eTIMS,${Math.round(S.r)}\nExtra tax at risk (estimate),${Math.round(S.txr-S.tx)}\n\nDate,Direction,Amount KES,Who,Type,Source,Has eTIMS\n`;
+t+=E.filter(e=>(e.d||'').startsWith(y)).map(e=>[e.d,e.t,e.a,q(e.p),e.c,e.s,e.t==='out'&&e.c==='Expense'?(e.e?'yes':'no'):''].join(',')).join('\n');
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='mapato-pack-'+y+'.csv';a.click()};
+$('ef').onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=parseEtims(await f.text(),$('ek').value);const have=new Set(T.map(t=>t.id));let n=0;r.rows.forEach(t=>{if(!have.has(t.id)){have.add(t.id);T.push(t);n++}});sv('mpt:'+CL,T);$('em').textContent=(n?'Added '+n+' invoices. ':'Nothing added. ')+r.note;e.target.value=''};
+const sm2=L=>L.reduce((s,x)=>s+x.a,0);
+function renderRec(){const y=$('yr').value||String(new Date().getFullYear()),R=recon(E,T,y,ST),b=$('rs');b.innerHTML='';
+line(b,'eTIMS purchase invoices imported for '+y,R.hasP?String(R.ex.m.length+R.ex.left.length):'None yet. Import them (tab 1, D).');
+line(b,'Expenses matched to an eTIMS invoice',R.ex.m.length+' ('+K(sm2(R.ex.m.map(p=>p[0])))+')');
+line(b,'Expenses with no eTIMS match',R.ex.un.length+' ('+K(sm2(R.ex.un))+')','risk');
+if(R.hasP)line(b,'eTIMS purchase invoices with no payment found',R.ex.left.length+' ('+K(sm2(R.ex.left))+')','risk');
+line(b,'Sales without an eTIMS sales invoice',R.hasS?R.sa.un.length+' ('+K(sm2(R.sa.un))+')':'Import eTIMS sales to check','risk');
+if(R.hasS)line(b,'eTIMS sales invoices with no money in found',R.sa.left.length+' ('+K(sm2(R.sa.left))+')','risk');
+line(b,'Statement balance gaps',R.gaps.length+' ('+K(R.gaps.reduce((s,g)=>s+Math.abs(g.amt),0))+')','risk');
+line(b,'Transfers with no matching other side',String(R.tr.un.length+R.tr.left.length),'risk');
+line(b,'Months with no records',R.mm.map(x=>x.ac+': '+x.miss.join(', ')).join('; ')||'None');
+if(R.ex.s.length)line(b,'Split payments matched (2 payments to 1 invoice)',String(R.ex.s.length));
+if(R.cn.length)line(b,'eTIMS credit notes (kept out of matching)',R.cn.length+' ('+K(sm2(R.cn))+')','risk');
+if(R.bp.length)line(b,'eTIMS rows with an invalid PIN format',String(R.bp.length),'risk');
+line(b,'Large items for review (from '+K(ST.big)+')',R.big.length+' large, '+R.near.length+' just below','risk');
+if(R.und)line(b,'Entries with no valid date (left out)',String(R.und),'risk');
+if(R.dup)line(b,'Possible duplicate rows',String(R.dup),'risk');
+const ns=$('ns');ns.innerHTML='';let n=0;const st=(t,d)=>{const x=document.createElement('div');x.className='step';const h=document.createElement('b');h.textContent=(++n)+'. '+t;const p=document.createElement('span');p.textContent=d;x.append(h,p);ns.appendChild(x)};
+if(R.mm.length||R.gaps.length)st('Complete the records first','Download and import the missing statements. '+R.mm.map(x=>x.ac+' has no records for '+x.miss.join(', ')).join('; ')+(R.gaps.length?' Balance gaps mean rows are missing near: '+R.gaps.slice(0,5).map(g=>g.ac+' '+(g.at||'').slice(0,10)+' ('+K(Math.abs(g.amt))+')').join(', ')+'.':''));
+if(!R.hasP)st('Get your eTIMS purchases','In iTax, download your eTIMS purchases for '+y+', save as CSV, and import them (tab 1, section D). Then run matching again.');
+if(R.hasP&&R.ex.un.length)st('Fix '+R.ex.un.length+' expenses without an eTIMS invoice ('+K(sm2(R.ex.un))+')','For each one: (a) ask the supplier for an eTIMS invoice that shows your PIN as buyer; (b) if the supplier is a small business, KRA describes buyer-initiated invoicing on eCitizen for turnover up to KES 5 million, so you can raise it for them; (c) check any invoice by its QR code or the invoice checker in iTax; (d) if none is possible and the expense is genuine, put it on the non-eTIMS schedule (download below) and upload it in iTax under Returns, Income Tax Return Adjustments, Manual and Non-eTIMS/TIMS Invoices before entering it in the tax computation. Keep proof of payment. Never claim the same expense both ways. KRA has described the non-eTIMS route as relief for the 2025 returns, so confirm the rule for this year.');
+if(R.ex.left.length)st('Explain '+R.ex.left.length+' eTIMS invoices with no payment ('+K(sm2(R.ex.left))+')','Check whether they were paid from another account or in cash, are still owed to the supplier, or are not your expenses. Add the missing account if needed.');
+if(R.hasS&&R.sa.un.length)st(R.sa.un.length+' receipts have no eTIMS sales invoice ('+K(sm2(R.sa.un))+')','Check whether an invoice exists under a different amount or date. Issue or regularise missing sales invoices, and mark family or loan money as Personal or Loan so it is not counted as sales.');
+if(R.hasS&&R.sa.left.length)st(R.sa.left.length+' eTIMS sales invoices have no money in ('+K(sm2(R.sa.left))+')','These may be unpaid credit sales, paid into an account you have not imported, or paid in cash. Record cash receipts or chase the customer.');
+if(R.tr.un.length+R.tr.left.length)st('Match '+(R.tr.un.length+R.tr.left.length)+' transfers','Money left one account without arriving in another, or the other way round. Import the other account or record the cash.');
+if(R.cn.length)st('Review '+R.cn.length+' eTIMS credit notes','Credit notes reduce a sale or purchase. Confirm each one against the original invoice and adjust your records.');
+if(R.bp.length)st('Correct '+R.bp.length+' invalid PINs','A KRA PIN is 11 characters: A or P, nine digits, then a letter. Ask the supplier or customer to confirm the PIN.');
+if(R.big.length+R.near.length)st('Review '+(R.big.length+R.near.length)+' large or near-threshold items','These are review flags, not findings. Confirm source of funds and supporting documents. Reporting thresholds and duties under POCAMLA depend on the firm and on FRC guidance, and sources quote different cash thresholds, so follow your own compliance programme.');
+if(R.und)st('Fix '+R.und+' entries with no valid date','They are left out of every total until a valid date is set. Check the date format setting and re-import.');
+if(R.dup)st('Review possible duplicates','Same date, amount and name appear more than once. Delete real duplicates.');
+if(!n)st('No problems found in the data you imported','Keep the pack, the eTIMS lists and proof of payment together with the return file.')}
+$('run').onclick=()=>{const y=$('yr').value,R=recon(E,T,y,ST);R.ex.m.forEach(([e,p])=>{e.e=true;e.m=p.inv});sv('mp:'+CL,E);$('rm').textContent='Ticked '+R.ex.m.length+' matched expenses as having eTIMS invoices.';render();renderRec()};
+$('nei').onclick=()=>{if(!need())return;const y=$('yr').value,q=s=>'"'+cell(s).replace(/"/g,'""')+'"';
+const t='Date,Supplier or description,Supplier PIN (if known),Amount KES,Account,Payment reference\n'+E.filter(e=>(e.d||'').startsWith(y)&&e.t==='out'&&e.c==='Expense'&&!e.e).map(e=>[e.d,q(e.p),'',e.a,q(AC(e)),String(e.id).split('-')[0]].join(',')).join('\n');
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='non-etims-schedule-'+CL+'-'+y+'.csv';a.click()};
+$('rcv').onclick=()=>{if(!need())return;const y=$('yr').value,R=recon(E,T,y,ST),q=s=>'"'+cell(s).replace(/"/g,'""')+'"',o=['Issue,Date,Account or invoice,Who,Amount KES'];
+R.ex.un.forEach(e=>o.push(['Expense without eTIMS',e.d,q(AC(e)),q(e.p),e.a].join(',')));R.ex.left.forEach(t=>o.push(['eTIMS purchase unpaid',t.d,q(t.inv),q(t.nm),t.a].join(',')));
+R.sa.un.forEach(e=>o.push(['Sale without eTIMS invoice',e.d,q(AC(e)),q(e.p),e.a].join(',')));R.sa.left.forEach(t=>o.push(['eTIMS sale with no money in',t.d,q(t.inv),q(t.nm),t.a].join(',')));
+R.tr.un.concat(R.tr.left).forEach(e=>o.push(['Unmatched transfer',e.d,q(AC(e)),q(e.p),e.a].join(',')));R.gaps.forEach(g=>o.push(['Balance gap',(g.at||'').slice(0,10),q(g.ac),'',Math.round(g.amt*100)/100].join(',')));
+R.mm.forEach(x=>o.push(['No records',q(x.miss.join(' ')),q(x.ac),'','']. join(',')));
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([o.join('\n')],{type:'text/csv'}));a.download='reconciliation-'+CL+'-'+y+'.csv';a.click()};
+$('rpr').onclick=()=>{if(!need())return;document.body.classList.add('prec');print();document.body.classList.remove('prec')};
+const SK=['pin','type','tot','df','tol','win','big','pb','rb'];
+function fillSet(){SK.forEach(k=>$('s_'+k).value=ST[k]);setDfmt(ST.df)}
+function saveSet(){SK.forEach(k=>{ST[k]=['tot','tol','win','big'].includes(k)?(+$('s_'+k).value||DEF[k]):$('s_'+k).value.trim()});$('rm').textContent=ST.pin&&!okPin(ST.pin)?'That KRA PIN does not look valid. The format is A123456789Z.':'';setDfmt(ST.df);sv('mps:'+CL,ST);log('settings','updated');render();renderRec()}
+SK.forEach(k=>$('s_'+k).onchange=saveSet);
+function hdr(){const L=ld('mplic',null),t=['Client: '+CL+(ST.pin?' · KRA PIN '+ST.pin:''),'Period: '+$('yr').value+' · Cash basis, KES · Tax basis: '+({ind:'individual',company:'company',tot:'turnover tax'}[ST.type]),'Prepared by: '+(ST.pb||'not stated')+' · Reviewed by: '+(ST.rb||'not stated')+' · Generated '+new Date().toISOString().slice(0,10)+(L?' · Licensed to '+L.n:''),'Compiled from records supplied by the client. Not audited or reviewed. Management information only. Estimates are not tax advice.'];
+document.querySelectorAll('.hd').forEach(d=>{d.innerHTML='';t.forEach(x=>{const p=document.createElement('div');p.textContent=x;d.appendChild(p)})})}
+function renderImp(){const d=$('ih');d.innerHTML='';IMP.slice(-8).reverse().forEach(i=>{const r=document.createElement('div');r.className='s';r.textContent=i.t.replace('T',' ')+' · '+i.l+' · '+i.n+' rows ';const b=document.createElement('button');b.textContent='Undo';b.className='btn alt';b.style.cssText='display:inline-block;width:auto;padding:6px 12px;margin:0 0 0 6px';
+b.onclick=()=>{if(!confirm('Remove the '+i.n+' rows from this import?'))return;E=E.filter(e=>e.b!==i.b);IMP=IMP.filter(x=>x.b!==i.b);sv('mp:'+CL,E);sv('mpi:'+CL,IMP);log('undo import',i.l);render();renderRec()};r.appendChild(b);d.appendChild(r)})}
+$('bk').onclick=()=>{const o={v:3,data:{}};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^mp[tsli]?:/.test(k)||k==='mpcl'||k==='mpcur')o.data[k]=localStorage.getItem(k)}
+const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o)],{type:'application/json'}));a.download='mapato-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();log('backup','downloaded')};
+$('rs2').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());if(!o.data||typeof o.data!=='object')throw 0;if(!confirm('Restore this backup? It replaces the matching client data on this phone.'))return;Object.keys(o.data).forEach(k=>{if(/^mp[tsli]?:/.test(k)||k==='mpcl'||k==='mpcur')localStorage.setItem(k,o.data[k])});location.reload()}catch(x){$('em').textContent='That file is not a Mapato backup.'}e.target.value=''};
+$('lgd').onclick=()=>{if(!need())return;const q=x=>'"'+cell(x).replace(/"/g,'""')+'"';const t='Time,User,Action,Detail\n'+LOG.map(l=>[l.t,q(l.u),q(l.a),q(l.d)].join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='audit-log-'+CL+'.csv';a.click()};
+$('unlock').onclick=async()=>{const c=$('c').value.trim();
+if(CONFIG.pub){try{const j=await verifyLic(c,CONFIG.pub);if(!j||j.p!=='mapato'){$('msg').textContent='This licence code is not valid.';return}if(new Date(j.e)<new Date()){$('msg').textContent='This licence expired on '+j.e+'.';return}sv('mplic',j);log('licence',j.n+' until '+j.e);setPro();hdr();$('msg').textContent='Unlocked for '+j.n+' until '+j.e+'.'}catch(x){$('msg').textContent='This licence code is not valid.'}return}
+if(!/^[A-Za-z0-9]{10}$/.test(c)){$('msg').textContent='Licence checking is not set up on this copy. Enter the 10-character M-Pesa code for a basic check.';return}sv('mpp',true);setPro();$('msg').textContent='Unlocked (basic check only).'};
+$('c').removeAttribute('maxlength');if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+if(pro())setPro();fillCl();fillSet();render();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
